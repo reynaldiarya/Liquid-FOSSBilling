@@ -57,7 +57,7 @@ class Registrar_Adapter_Liquid extends Registrar_AdapterAbstract
     public static function getConfig()
     {
         return array(
-            'label'     =>  'Manages domains on Liquid via API. Liquid requires your server IP in order to work. Login to the Liquid control panel (the url will be in the email you received when you signed up with them) and then go to Settings > API and enter the IP address of the server where BoxBilling is installed to authorize it for API access.',
+            'label'     =>  'Manages domains on Liquid via API. Liquid requires your server IP in order to work. Login to the Liquid control panel (the url will be in the email you received when you signed up with them) and then go to Settings > API and enter the IP address of the server where FOSSBilling is installed to authorize it for API access.',
             'form'  => array(
                 'userid' => array('text', array(
                             'label' => 'Reseller ID. You can get this at Liquid control panel Settings > Personal information > Primary profile > Reseller ID',
