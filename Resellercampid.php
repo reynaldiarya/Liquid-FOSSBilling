@@ -1,21 +1,17 @@
 <?php
 /**
- * BoxBilling
+ * FOSSBilling
  *
- * LICENSE
+ * @copyright FOSSBilling (https://www.fossbilling.org)
+ * @license   Apache-2.0
  *
- * This source file is subject to the license that is bundled
- * with this package in the file LICENSE.txt
- * It is also available through the world-wide-web at this URL:
- * http://www.boxbilling.com/LICENSE.txt
- * If you did not receive a copy of the license and are unable to
- * obtain it through the world-wide-web, please send an email
- * to license@boxbilling.com so we can send you a copy immediately.
+ * This file may contain code previously used in the BoxBilling project.
+ * Copyright BoxBilling, Inc 2011-2021
  *
- * @copyright Copyright (c) 2010-2012 BoxBilling (http://www.boxbilling.com)
- * @license   http://www.boxbilling.com/LICENSE.txt
- * @version   $Id$
+ * This source file is subject to the Apache-2.0 License that is bundled
+ * with this source code in the file LICENSE
  */
+
 /**
  * HTTP API documentation http://liquid-docs.readthedocs.org/en/latest/restapi.html
  */
@@ -57,7 +53,7 @@ class Registrar_Adapter_Resellercampid extends Registrar_AdapterAbstract
             throw new Registrar_Exception('Domain registrar "Resellercampid" is not configured properly. Please update configuration parameter "Resellercampid API Key" at "Configuration -> Domain registration".');
         }
     }
-    
+
     public static function getConfig()
     {
         return array(
@@ -77,7 +73,7 @@ class Registrar_Adapter_Resellercampid extends Registrar_AdapterAbstract
             ),
         );
     }
-    
+
     /**
      * Tells what TLDs can be registered via this adapter
      * @return string[]
@@ -154,11 +150,13 @@ class Registrar_Adapter_Resellercampid extends Registrar_AdapterAbstract
     {
         $result = $this->_makeRequest('domains/availability?domain='.$domain->getName(), array(), 'get');
 
-        foreach ($result as $val) {
-            $check = $val[$domain->getName()];
-            if($check && $check['status'] == 'available') {
-                return true;
-            }
+        if(!isset($result[$domain->getName()])) {
+            return true;
+        }
+
+        $check = $result[$domain->getName()];
+        if($check && $check['status'] == 'available') {
+            return true;
         }
 
         return false;
@@ -168,7 +166,7 @@ class Registrar_Adapter_Resellercampid extends Registrar_AdapterAbstract
      * Cek transfer domain
      * @return boolean
      */
-    public function isDomainCanBeTransfered(Registrar_Domain $domain)
+    public function isDomainCanBeTransferred(Registrar_Domain $domain)
     {
         $params = array(
             'domain_name'       =>  $domain->getName(),
@@ -231,7 +229,7 @@ class Registrar_Adapter_Resellercampid extends Registrar_AdapterAbstract
         $cdetails = $this->_getDefaultContactDetails($customer_id, $tld, $cust);
         $contact_id = $cdetails['registrant_contact']['contact_id'];
         $c = $domain->getContactRegistrar();
-        
+
         $required_params = array(
             'name'              =>  $c->getName(),
             'company'           =>  $c->getCompany(),
@@ -396,12 +394,12 @@ class Registrar_Adapter_Resellercampid extends Registrar_AdapterAbstract
     {
         $domain_id = $this->_getDomainOrderId($d);
         $data = $this->_makeRequest('domains/'.$domain_id.'?fields=all');
-        
+
         $d->setRegistrationTime(strtotime($data['creation_time']));
         $d->setExpirationTime(strtotime($data['end_time']));
         $d->setEpp($this->getEpp($d));
         $d->setPrivacyEnabled(($data['privacy_protection_enabled'] == 'true'));
-        
+
         /* Contact details */
         $wc = $data['adm_contact'];
         $c = new Registrar_Domain_Contact();
@@ -416,7 +414,7 @@ class Registrar_Adapter_Resellercampid extends Registrar_AdapterAbstract
             ->setCountry($wc['country_code'])
             ->setState($wc['state'])
             ->setZip($wc['zipcode']);
-        
+
         if(isset($wc['address_line_2'])) {
             $c->setAddress2($wc['address_line_2']);
         }
@@ -437,7 +435,7 @@ class Registrar_Adapter_Resellercampid extends Registrar_AdapterAbstract
         if(isset($data['ns4'])) {
             $d->setNs4($data['ns4']);
         }
-        
+
         return $d;
     }
 
@@ -462,7 +460,7 @@ class Registrar_Adapter_Resellercampid extends Registrar_AdapterAbstract
         if($this->_hasCompletedOrder($domain)) {
             return true;
         }
-        
+
         $tld = ltrim($domain->getTld(),'.');
 
         $cust = $domain->getContactRegistrar();
@@ -592,9 +590,13 @@ class Registrar_Adapter_Resellercampid extends Registrar_AdapterAbstract
     public function enablePrivacyProtection(Registrar_Domain $domain)
     {
         $domain_id = $this->_getDomainOrderId($domain);
+        $params = array(
+            'order-id'        =>  $domain_id,
+            'protect-privacy' =>  true,
+            'reason'          =>  'Owners decision',
+        );
 
         $result = $this->_makeRequest('domains/'.$domain_id.'/privacy_protection', $params, 'put');
-
         return (strtolower($result['privacy_protection_enabled']) == 'true');
     }
 
@@ -605,9 +607,13 @@ class Registrar_Adapter_Resellercampid extends Registrar_AdapterAbstract
     public function disablePrivacyProtection(Registrar_Domain $domain)
     {
         $domain_id = $this->_getDomainOrderId($domain);
+        $params = array(
+            'order-id'        =>  $domain_id,
+            'protect-privacy' =>  false,
+            'reason'          =>  'Owners decision',
+        );
 
         $result = $this->_makeRequest('domains/'.$domain_id.'/privacy_protection', $params, 'delete');
-
         return (strtolower($result['privacy_protection_enabled']) == 'false');
     }
 
@@ -820,7 +826,7 @@ class Registrar_Adapter_Resellercampid extends Registrar_AdapterAbstract
 
         return $result;
     }
-    
+
     /**
      * Cek domain sudah jadi belum
      * @return boolean
@@ -853,7 +859,7 @@ class Registrar_Adapter_Resellercampid extends Registrar_AdapterAbstract
 
         return false;
     }
-    
+
     /**
      * Cek TestMode
      * @return boolean
