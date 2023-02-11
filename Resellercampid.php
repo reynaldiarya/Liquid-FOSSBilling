@@ -150,13 +150,11 @@ class Registrar_Adapter_Resellercampid extends Registrar_AdapterAbstract
     {
         $result = $this->_makeRequest('domains/availability?domain='.$domain->getName(), array(), 'get');
 
-        if(!isset($result[$domain->getName()])) {
-            return true;
-        }
-
-        $check = $result[$domain->getName()];
-        if($check && $check['status'] == 'available') {
-            return true;
+        foreach ($result as $val) {
+            $check = $val[$domain->getName()];
+            if($check && $check['status'] == 'available') {
+                return true;
+            }
         }
 
         return false;
@@ -590,13 +588,9 @@ class Registrar_Adapter_Resellercampid extends Registrar_AdapterAbstract
     public function enablePrivacyProtection(Registrar_Domain $domain)
     {
         $domain_id = $this->_getDomainOrderId($domain);
-        $params = array(
-            'order-id'        =>  $domain_id,
-            'protect-privacy' =>  true,
-            'reason'          =>  'Owners decision',
-        );
 
         $result = $this->_makeRequest('domains/'.$domain_id.'/privacy_protection', $params, 'put');
+
         return (strtolower($result['privacy_protection_enabled']) == 'true');
     }
 
@@ -607,13 +601,9 @@ class Registrar_Adapter_Resellercampid extends Registrar_AdapterAbstract
     public function disablePrivacyProtection(Registrar_Domain $domain)
     {
         $domain_id = $this->_getDomainOrderId($domain);
-        $params = array(
-            'order-id'        =>  $domain_id,
-            'protect-privacy' =>  false,
-            'reason'          =>  'Owners decision',
-        );
 
         $result = $this->_makeRequest('domains/'.$domain_id.'/privacy_protection', $params, 'delete');
+
         return (strtolower($result['privacy_protection_enabled']) == 'false');
     }
 
