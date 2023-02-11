@@ -1,4 +1,4 @@
-# liquid-boxbilling
-Liquid BoxBilling Registrar Module
+# Liquid-FOSSBilling
+Liquid FOSSBilling Registrar Module
 
 http://liquid-docs.readthedocs.io/en/latest/boxbilling.html
